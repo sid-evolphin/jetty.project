@@ -37,10 +37,6 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-jmx</artifactId>
       <optional>true</optional>
     </dependency>
