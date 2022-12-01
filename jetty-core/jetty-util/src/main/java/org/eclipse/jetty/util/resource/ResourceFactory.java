@@ -16,7 +16,9 @@ package org.eclipse.jetty.util.resource;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
@@ -237,8 +239,8 @@ public interface ResourceFactory
 
     default Resource newJarFileResource(URI uri)
     {
-        if (!FileID.isArchive(uri))
-            throw new IllegalArgumentException("Path is not a Java Archive: " + uri);
+        /*        if (!FileID.isArchive(uri))
+            throw new IllegalArgumentException("Path is not a Java Archive: " + uri);*/
         if (!uri.getScheme().equalsIgnoreCase("file"))
             throw new IllegalArgumentException("Not an allowed path: " + uri);
         return newResource(URIUtil.toJarFileUri(uri));

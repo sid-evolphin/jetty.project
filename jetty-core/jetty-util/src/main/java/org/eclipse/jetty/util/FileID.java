@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 /**
@@ -280,7 +281,21 @@ public class FileID
      */
     public static boolean isArchive(URI uri)
     {
-        return isExtension(uri, "jar", "war", "zip");
+        if (isExtension(uri, "jar", "war", "zip"))
+            return true;
+        
+        try
+        {
+            Path p = Paths.get(uri);
+            String mimetype = Files.probeContentType(p);
+            if ("application/java-archive".equalsIgnoreCase(mimetype))
+                return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+        return false;
     }
 
     /**

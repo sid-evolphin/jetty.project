@@ -1861,9 +1861,9 @@ public final class URIUtil
     {
         Objects.requireNonNull(uri, "URI");
         String scheme = Objects.requireNonNull(uri.getScheme(), "URI scheme");
-
+        /*
         if (!FileID.isArchive(uri))
-            return uri;
+            return uri;*/
 
         boolean hasInternalReference = uri.getRawSchemeSpecificPart().indexOf("!/") > 0;
 
