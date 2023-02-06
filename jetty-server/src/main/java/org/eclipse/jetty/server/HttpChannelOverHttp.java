@@ -590,7 +590,7 @@ public class HttpChannelOverHttp extends HttpChannel implements HttpParser.Reque
     }
 
     @Override
-    public void startRequest(String method, String uri, HttpVersion version)
+    public void startRequest(String method, HttpURI uri, HttpVersion version)
     {
         _requestBuilder.request(method, uri, version);
         _unknownExpectation = false;
@@ -702,7 +702,7 @@ public class HttpChannelOverHttp extends HttpChannel implements HttpParser.Reque
     private static class RequestBuilder
     {
         private final HttpFields.Mutable _fieldsBuilder = HttpFields.build();
-        private final HttpURI.Mutable _uriBuilder = HttpURI.build();
+        private HttpURI _uri;
         private String _method;
         private HttpVersion _version;
 
@@ -711,10 +711,10 @@ public class HttpChannelOverHttp extends HttpChannel implements HttpParser.Reque
             return _method;
         }
 
-        public void request(String method, String uri, HttpVersion version)
+        public void request(String method, HttpURI uri, HttpVersion version)
         {
             _method = method;
-            _uriBuilder.uri(method, uri);
+            _uri = uri;
             _version = version;
             _fieldsBuilder.clear();
         }
@@ -726,7 +726,7 @@ public class HttpChannelOverHttp extends HttpChannel implements HttpParser.Reque
 
         public MetaData.Request build()
         {
-            return new MetaData.Request(_method, _uriBuilder, _version, _fieldsBuilder);
+            return new MetaData.Request(_method, _uri, _version, _fieldsBuilder);
         }
 
         public HttpVersion version()

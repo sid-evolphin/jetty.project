@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.http.HttpURI;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
@@ -97,7 +98,7 @@ public class ExtendedServerTest extends HttpServerTestBase
             return new HttpChannelOverHttp(this, getConnector(), getHttpConfiguration(), getEndPoint(), this)
             {
                 @Override
-                public void startRequest(String method, String uri, HttpVersion version)
+                public void startRequest(String method, HttpURI uri, HttpVersion version)
                 {
                     getRequest().setAttribute("DispatchedAt", ((ExtendedEndPoint)getEndPoint()).getLastSelected());
                     super.startRequest(method, uri, version);

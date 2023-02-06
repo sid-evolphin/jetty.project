@@ -3049,7 +3049,7 @@ public class HttpParserTest
         }
 
         @Override
-        public void startRequest(String method, String uri, HttpVersion version)
+        public void startRequest(String method, HttpURI uri, HttpVersion version)
         {
             _fields.clear();
             _trailers.clear();
@@ -3057,7 +3057,7 @@ public class HttpParserTest
             _hdr = new String[10];
             _val = new String[10];
             _methodOrVersion = method;
-            _uriOrStatus = uri;
+            _uriOrStatus = uri.getPath() == null ? uri.getAuthority() : uri.toString();
             _versionOrReason = version == null ? null : version.asString();
             _messageCompleted = false;
             _headerCompleted = false;

@@ -222,6 +222,7 @@ public class HttpParser
     private final int _maxHeaderBytes;
     private final HttpCompliance _complianceMode;
     private final Utf8StringBuilder _uri = new Utf8StringBuilder(INITIAL_URI_LENGTH);
+    private final HttpURI.Mutable _httpUri = HttpURI.build();
     private final FieldCache _fieldCache = new FieldCache();
     private HttpField _field;
     private HttpHeader _header;
@@ -705,7 +706,6 @@ public class HttpParser
                             }
                             else
                             {
-                                _uri.reset();
                                 setState(State.URI);
                                 // quick scan for space or EoBuffer
                                 if (buffer.hasArray())
@@ -776,7 +776,8 @@ public class HttpParser
                             if (Violation.HTTP_0_9.isAllowedBy(_complianceMode))
                             {
                                 reportComplianceViolation(HTTP_0_9, HTTP_0_9.getDescription());
-                                _requestHandler.startRequest(_methodString, _uri.toString(), HttpVersion.HTTP_0_9);
+                                _httpUri.uri(_methodString, _uri.toString());
+                                _requestHandler.startRequest(_methodString, _httpUri.asImmutable(), HttpVersion.HTTP_0_9);
                                 setState(State.CONTENT);
                                 _endOfContent = EndOfContent.NO_CONTENT;
                                 BufferUtil.clear(buffer);
@@ -868,7 +869,8 @@ public class HttpParser
                             {
                                 // HTTP/0.9
                                 checkViolation(Violation.HTTP_0_9);
-                                _requestHandler.startRequest(_methodString, _uri.toString(), HttpVersion.HTTP_0_9);
+                                _httpUri.uri(_methodString, _uri.toString());
+                                _requestHandler.startRequest(_methodString,_httpUri.asImmutable(), HttpVersion.HTTP_0_9);
                                 setState(State.CONTENT);
                                 _endOfContent = EndOfContent.NO_CONTENT;
                                 BufferUtil.clear(buffer);
@@ -894,7 +896,8 @@ public class HttpParser
                             _fieldCache.prepare();
                             setState(State.HEADER);
 
-                            _requestHandler.startRequest(_methodString, _uri.toString(), _version);
+                            _httpUri.uri(_methodString, _uri.toString());
+                            _requestHandler.startRequest(_methodString, _httpUri.asImmutable(), _version);
                             continue;
 
                         case ALPHA:
@@ -1909,6 +1912,8 @@ public class HttpParser
         _headerBytes = 0;
         _parsedHost = null;
         _headerComplete = false;
+        _uri.reset();
+        _httpUri.clear();
     }
 
     public void servletUpgrade()
@@ -2003,10 +2008,25 @@ public class HttpParser
          * This is the method called by parser when the HTTP request line is parsed
          *
          * @param method The method
-         * @param uri The raw bytes of the URI.  These are copied into a ByteBuffer that will not be changed until this parser is reset and reused.
+         * @param uri The raw bytes of the URI.
+         * @param version the http version in use
+         * @deprecated use {@link #startRequest(String, HttpURI, HttpVersion)}
+         */
+        @Deprecated
+        default void startRequest(String method, String uri, HttpVersion version)
+        {}
+
+        /**
+         * This is the method called by parser when the HTTP request line is parsed
+         *
+         * @param method The method
+         * @param uri The raw bytes of the URI.
          * @param version the http version in use
          */
-        void startRequest(String method, String uri, HttpVersion version);
+        default void startRequest(String method, HttpURI uri, HttpVersion version)
+        {
+            startRequest(method, uri.toString(), version);
+        }
     }
 
     public interface ResponseHandler extends HttpHandler

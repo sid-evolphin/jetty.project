@@ -502,10 +502,10 @@ public class HttpTester
         private String _uri;
 
         @Override
-        public void startRequest(String method, String uri, HttpVersion version)
+        public void startRequest(String method, HttpURI uri, HttpVersion version)
         {
             _method = method;
-            _uri = uri;
+            _uri = uri.toString();
             _version = version;
         }
 
