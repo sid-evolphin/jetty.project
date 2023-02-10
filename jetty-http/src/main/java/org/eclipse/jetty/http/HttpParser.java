@@ -13,34 +13,18 @@
 
 package org.eclipse.jetty.http;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
 import org.eclipse.jetty.http.HttpTokens.EndOfContent;
-import org.eclipse.jetty.util.BufferUtil;
-import org.eclipse.jetty.util.HostPort;
-import org.eclipse.jetty.util.Index;
-import org.eclipse.jetty.util.StringUtil;
-import org.eclipse.jetty.util.Utf8StringBuilder;
+import org.eclipse.jetty.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+
 import static org.eclipse.jetty.http.HttpCompliance.RFC7230;
 import static org.eclipse.jetty.http.HttpCompliance.Violation;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.CASE_SENSITIVE_FIELD_NAME;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.DUPLICATE_HOST_HEADERS;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.HTTP_0_9;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.MULTIPLE_CONTENT_LENGTHS;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.NO_COLON_AFTER_FIELD_NAME;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.TRANSFER_ENCODING_WITH_CONTENT_LENGTH;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.UNSAFE_HOST_HEADER;
-import static org.eclipse.jetty.http.HttpCompliance.Violation.WHITESPACE_AFTER_FIELD_NAME;
+import static org.eclipse.jetty.http.HttpCompliance.Violation.*;
 
 /**
  * A Parser for 1.0 and 1.1 as defined by RFC7230
@@ -870,7 +854,7 @@ public class HttpParser
                                 // HTTP/0.9
                                 checkViolation(Violation.HTTP_0_9);
                                 _httpUri.uri(_methodString, _uri.toString());
-                                _requestHandler.startRequest(_methodString,_httpUri.asImmutable(), HttpVersion.HTTP_0_9);
+                                _requestHandler.startRequest(_methodString, _httpUri.asImmutable(), HttpVersion.HTTP_0_9);
                                 setState(State.CONTENT);
                                 _endOfContent = EndOfContent.NO_CONTENT;
                                 BufferUtil.clear(buffer);
