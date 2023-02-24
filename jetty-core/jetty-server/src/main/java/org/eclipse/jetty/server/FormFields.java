@@ -37,7 +37,7 @@ public class FormFields extends CompletableFuture<Fields> implements Runnable
 {
     public static final String MAX_FIELDS_ATTRIBUTE = "org.eclipse.jetty.server.Request.maxFormKeys";
     public static final String MAX_LENGTH_ATTRIBUTE = "org.eclipse.jetty.server.Request.maxFormContentSize";
-    private static final CompletableFuture<Fields> EMPTY = CompletableFuture.completedFuture(new Fields());
+    private static final CompletableFuture<Fields> EMPTY = CompletableFuture.completedFuture(Fields.EMPTY);
 
     public static Charset getFormEncodedCharset(Request request)
     {
@@ -80,6 +80,8 @@ public class FormFields extends CompletableFuture<Fields> implements Runnable
         Object attr = request.getAttribute(FormFields.class.getName());
         if (attr instanceof FormFields futureFormFields)
             return futureFormFields;
+        else if (attr instanceof Fields fields)
+            return CompletableFuture.completedFuture(fields);
 
         Charset charset = getFormEncodedCharset(request);
         if (charset == null)
@@ -123,16 +125,11 @@ public class FormFields extends CompletableFuture<Fields> implements Runnable
 
     public FormFields(Content.Source source, Charset charset, int maxFields, int maxSize)
     {
-        this(source, charset, maxFields, maxSize, null);
-    }
-
-    public FormFields(Content.Source source, Charset charset, int maxFields, int maxSize, Fields fields)
-    {
         _source = source;
         _maxFields = maxFields;
         _maxLength = maxSize;
         _builder = CharsetStringBuilder.forCharset(charset);
-        _fields = fields == null ? new Fields() : fields;
+        _fields = new Fields();
     }
 
     @Override

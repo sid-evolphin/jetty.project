@@ -571,7 +571,7 @@ public class ServletContextHandler extends ContextHandler
             if (existing != null)
                 union.addAll(existing);
             union.addAll(Arrays.asList(roleNames));
-            ((ConstraintSecurityHandler)_securityHandler).setRoles(union);
+            ((ConstraintSecurityHandler)_securityHandler).setKnownRoles(union);
         }
     }
 

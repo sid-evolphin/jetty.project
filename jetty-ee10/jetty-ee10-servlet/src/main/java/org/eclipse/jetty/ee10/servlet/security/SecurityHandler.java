@@ -517,9 +517,11 @@ public abstract class SecurityHandler extends Handler.Wrapper implements Authent
 
                 //process the request by other handlers
                 boolean processed = next.handle(request, response, callback);
-                // TODO this looks wrong
+
+                // TODO this looks wrong. It perhaps should be done as a response wrapper? or not at all?
                 if (processed && authenticator != null)
                     authenticator.secureResponse(request, response, callback, isAuthMandatory, userAuth);
+
                 return processed;
             }
 

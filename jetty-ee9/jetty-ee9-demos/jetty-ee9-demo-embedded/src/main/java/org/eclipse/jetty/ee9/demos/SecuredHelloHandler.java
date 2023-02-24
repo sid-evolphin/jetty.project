@@ -14,7 +14,6 @@
 package org.eclipse.jetty.ee9.demos;
 
 import java.io.FileNotFoundException;
-import java.net.URL;
 import java.util.Collections;
 
 import org.eclipse.jetty.ee9.security.ConstraintMapping;
@@ -64,7 +63,7 @@ public class SecuredHelloHandler
         // constraints. The server sets this as the first handler in the chain,
         // effectively applying these constraints to all subsequent handlers in
         // the chain.
-        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler security = new ConstraintSecurityHandler(securityHandler);
         context.setSecurityHandler(security);
 
         // This constraint requires authentication and in addition that an

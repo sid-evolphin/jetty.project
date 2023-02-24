@@ -95,7 +95,7 @@ public class OpenIdAuthenticationTest
         adminMapping.setPathSpec("/admin");
 
         // security handler
-        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler(securityHandler);
         assertThat(securityHandler.getKnownAuthenticatorFactories().size(), greaterThanOrEqualTo(2));
 
         securityHandler.setAuthMethod(Constraint.__OPENID_AUTH);

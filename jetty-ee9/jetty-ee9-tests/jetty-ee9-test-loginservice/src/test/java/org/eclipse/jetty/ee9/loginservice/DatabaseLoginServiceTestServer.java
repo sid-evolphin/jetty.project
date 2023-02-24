@@ -219,7 +219,7 @@ public class DatabaseLoginServiceTestServer
         _protocol = "http";
         _server.addBean(_loginService);
 
-        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler security = new ConstraintSecurityHandler(securityHandler);
 
         Constraint constraint = new Constraint();
         constraint.setName("auth");

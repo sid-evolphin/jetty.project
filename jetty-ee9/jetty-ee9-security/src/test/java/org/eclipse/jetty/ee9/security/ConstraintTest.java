@@ -78,7 +78,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -123,7 +122,7 @@ public class ConstraintTest
 
         _server.addBean(loginService);
 
-        _security = new ConstraintSecurityHandler();
+        _security = new ConstraintSecurityHandler(securityHandler);
         sessionHandler.setHandler(_security);
         RequestHandler requestHandler = new RequestHandler();
         _security.setHandler(requestHandler);

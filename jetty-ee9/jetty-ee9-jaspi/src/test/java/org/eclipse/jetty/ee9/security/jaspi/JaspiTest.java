@@ -135,7 +135,7 @@ public class JaspiTest
 
         JaspiAuthenticatorFactory jaspiAuthFactory = new JaspiAuthenticatorFactory();
 
-        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler security = new ConstraintSecurityHandler(securityHandler);
         context.setHandler(security);
         security.setAuthenticatorFactory(jaspiAuthFactory);
         // security.setAuthenticator(new BasicAuthenticator());
@@ -153,7 +153,7 @@ public class JaspiTest
         ContextHandler other = new ContextHandler();
         contexts.addHandler(other);
         other.setContextPath("/other");
-        ConstraintSecurityHandler securityOther = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler securityOther = new ConstraintSecurityHandler(securityHandler);
         other.setHandler(securityOther);
         securityOther.setAuthenticatorFactory(jaspiAuthFactory);
         securityOther.addConstraintMapping(mapping);

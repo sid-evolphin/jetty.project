@@ -79,7 +79,7 @@ public class AliasedConstraintTest
 
         server.addBean(loginService);
 
-        security = new ConstraintSecurityHandler();
+        security = new ConstraintSecurityHandler(securityHandler);
         session.setHandler(security);
         ResourceHandler handler = new ResourceHandler();
         security.setHandler(handler);

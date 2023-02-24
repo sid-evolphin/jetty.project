@@ -34,7 +34,7 @@ public class OpenIdReamNameTest
 
     public static ServletContextHandler configureOpenIdContext(String realmName)
     {
-        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler(securityHandler);
         assertThat(securityHandler.getKnownAuthenticatorFactories().size(), greaterThanOrEqualTo(2));
         securityHandler.setAuthMethod(Constraint.__OPENID_AUTH);
         securityHandler.setRealmName(realmName);

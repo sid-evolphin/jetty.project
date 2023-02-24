@@ -35,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestSecurityAnnotationConversions
 {
@@ -327,7 +326,7 @@ public class TestSecurityAnnotationConversions
         holders[0].setName(servletName);
         holders[0].setServletHandler(wac.getServletHandler());
         wac.getServletHandler().setServlets(holders);
-        wac.setSecurityHandler(new ConstraintSecurityHandler());
+        wac.setSecurityHandler(new ConstraintSecurityHandler(securityHandler));
 
         ServletMapping[] servletMappings = new ServletMapping[1];
         servletMappings[0] = new ServletMapping();

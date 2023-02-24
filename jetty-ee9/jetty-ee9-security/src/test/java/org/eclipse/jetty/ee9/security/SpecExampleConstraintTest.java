@@ -82,7 +82,7 @@ public class SpecExampleConstraintTest
     @BeforeEach
     public void setupSecurity()
     {
-        _security = new ConstraintSecurityHandler();
+        _security = new ConstraintSecurityHandler(securityHandler);
         _session.setHandler(_security);
         RequestHandler handler = new RequestHandler();
         _security.setHandler(handler);

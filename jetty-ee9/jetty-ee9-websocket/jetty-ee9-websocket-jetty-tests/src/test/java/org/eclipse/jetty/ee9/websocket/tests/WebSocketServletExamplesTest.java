@@ -95,7 +95,7 @@ public class WebSocketServletExamplesTest
         mapping.setPathSpec("/authed/*");
         mapping.setConstraint(constraint);
 
-        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler security = new ConstraintSecurityHandler(securityHandler);
         security.addConstraintMapping(mapping);
         security.setAuthenticator(new BasicAuthenticator());
         security.setLoginService(loginService);

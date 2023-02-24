@@ -54,7 +54,7 @@ public class UnauthenticatedTest
         authenticator = new TestAuthenticator();
 
         // Add a security handler which requires paths under /requireAuth to be authenticated.
-        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler(securityHandler);
         Constraint requireAuthentication = new Constraint();
         requireAuthentication.setRoles(new String[]{"**"});
         requireAuthentication.setAuthenticate(true);

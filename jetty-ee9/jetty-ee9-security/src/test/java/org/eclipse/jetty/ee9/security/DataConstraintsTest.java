@@ -90,7 +90,7 @@ public class DataConstraintsTest
         _server.setHandler(contextHandler);
         contextHandler.setHandler(_session);
 
-        _security = new ConstraintSecurityHandler();
+        _security = new ConstraintSecurityHandler(securityHandler);
         _session.setHandler(_security);
 
         _security.setHandler(new AbstractHandler()

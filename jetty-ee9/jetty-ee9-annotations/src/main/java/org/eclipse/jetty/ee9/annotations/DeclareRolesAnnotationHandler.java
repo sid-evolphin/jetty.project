@@ -56,7 +56,7 @@ public class DeclareRolesAnnotationHandler extends AbstractIntrospectableAnnotat
         {
             for (String r : roles)
             {
-                ((ConstraintSecurityHandler)_context.getSecurityHandler()).addRole(r);
+                ((ConstraintSecurityHandler)_context.getSecurityHandler()).addKnownRole(r);
                 _context.getMetaData().setOrigin("security-role." + r, declareRoles, clazz);
             }
         }

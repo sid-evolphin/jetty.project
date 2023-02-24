@@ -298,12 +298,12 @@ public class TestServletAnnotations
     public void testDeclareRoles()
     {
         WebAppContext wac = new WebAppContext();
-        ConstraintSecurityHandler sh = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler sh = new ConstraintSecurityHandler(securityHandler);
         wac.setSecurityHandler(sh);
-        sh.setRoles(Set.of("humpty", "dumpty"));
+        sh.setKnownRoles(Set.of("humpty", "dumpty"));
         DeclareRolesAnnotationHandler handler = new DeclareRolesAnnotationHandler(wac);
         handler.doHandle(ServletC.class);
-        assertThat(sh.getRoles(), containsInAnyOrder("humpty", "alice", "dumpty"));
+        assertThat(sh.getKnownRoles(), containsInAnyOrder("humpty", "alice", "dumpty"));
     }
 
     private void copyClass(Class<?> clazz, Path outputDir) throws IOException, URISyntaxException

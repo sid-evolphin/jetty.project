@@ -363,7 +363,7 @@ public class Runner
                                     cm.setConstraint(constraint);
                                     cm.setPathSpec("/*");
 
-                                    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+                                    ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler(securityHandler);
                                     securityHandler.setLoginService(loginService);
                                     securityHandler.setConstraintMappings(Collections.singletonList(cm));
                                     securityHandler.setAuthenticator(new BasicAuthenticator());

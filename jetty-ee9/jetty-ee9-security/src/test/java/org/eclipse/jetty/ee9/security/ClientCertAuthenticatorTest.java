@@ -100,7 +100,7 @@ public class ClientCertAuthenticatorTest
         // Add connectors
         server.setConnectors(new Connector[]{httpConnector, httpsConnector});
 
-        ConstraintSecurityHandler constraintSecurityHandler = new ConstraintSecurityHandler();
+        ConstraintSecurityHandler constraintSecurityHandler = new ConstraintSecurityHandler(securityHandler);
         constraintSecurityHandler.setAuthMethod(Constraint.__CERT_AUTH2);
         ConstraintMapping constraintMapping = new ConstraintMapping();
         Constraint constraint = new Constraint();

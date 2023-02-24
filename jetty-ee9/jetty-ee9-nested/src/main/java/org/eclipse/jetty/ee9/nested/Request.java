@@ -78,6 +78,8 @@ import org.eclipse.jetty.http.MetaData;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.RuntimeIOException;
+import org.eclipse.jetty.security.Authentication;
+import org.eclipse.jetty.security.UserIdentity;
 import org.eclipse.jetty.server.HttpCookieUtils;
 import org.eclipse.jetty.server.HttpCookieUtils.SetCookieHttpField;
 import org.eclipse.jetty.server.Server;
@@ -87,6 +89,7 @@ import org.eclipse.jetty.session.ManagedSession;
 import org.eclipse.jetty.session.SessionManager;
 import org.eclipse.jetty.util.Attributes;
 import org.eclipse.jetty.util.AttributesMap;
+import org.eclipse.jetty.util.Blocker;
 import org.eclipse.jetty.util.HostPort;
 import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.util.MultiMap;
@@ -182,7 +185,7 @@ public class Request implements HttpServletRequest
     private MultiMap<String> _contentParameters;
     private MultiMap<String> _parameters;
     private Charset _queryEncoding;
-    private UserIdentity.Scope _scope;
+    private Scope _scope;
     private long _timeStamp;
     private MultiPartFormInputStream _multiParts; //if the request is a multi-part mime
     private AsyncContextState _async;
@@ -526,7 +529,8 @@ public class Request implements HttpServletRequest
             if (_input.isAsync())
                 throw new IllegalStateException("Cannot extract parameters with async IO");
 
-            UrlEncoded.decodeTo(in, params, getCharacterEncoding(), maxFormContentSize, maxFormKeys);
+            String charset = getCharacterEncoding();
+            UrlEncoded.decodeTo(in, params, UrlEncoded.decodeCharset(charset), maxFormContentSize, maxFormKeys);
         }
         catch (IOException e)
         {
@@ -634,7 +638,7 @@ public class Request implements HttpServletRequest
     public String getAuthType()
     {
         if (_authentication instanceof Authentication.Deferred)
-            setAuthentication(((Authentication.Deferred)_authentication).authenticate(this));
+            setAuthentication(((Authentication.Deferred)_authentication).authenticate(getCoreRequest()));
 
         if (_authentication instanceof Authentication.User)
             return ((Authentication.User)_authentication).getAuthMethod();
@@ -1389,7 +1393,7 @@ public class Request implements HttpServletRequest
     public UserIdentity getUserIdentity()
     {
         if (_authentication instanceof Authentication.Deferred)
-            setAuthentication(((Authentication.Deferred)_authentication).authenticate(this));
+            setAuthentication(((Authentication.Deferred)_authentication).authenticate(getCoreRequest()));
 
         if (_authentication instanceof Authentication.User)
             return ((Authentication.User)_authentication).getUserIdentity();
@@ -1407,7 +1411,7 @@ public class Request implements HttpServletRequest
         return null;
     }
 
-    public UserIdentity.Scope getUserIdentityScope()
+    public Scope getUserIdentityScope()
     {
         return _scope;
     }
@@ -1416,7 +1420,7 @@ public class Request implements HttpServletRequest
     public Principal getUserPrincipal()
     {
         if (_authentication instanceof Authentication.Deferred)
-            setAuthentication(((Authentication.Deferred)_authentication).authenticate(this));
+            setAuthentication(((Authentication.Deferred)_authentication).authenticate(getCoreRequest()));
 
         if (_authentication instanceof Authentication.User)
         {
@@ -1495,10 +1499,14 @@ public class Request implements HttpServletRequest
     public boolean isUserInRole(String role)
     {
         if (_authentication instanceof Authentication.Deferred)
-            setAuthentication(((Authentication.Deferred)_authentication).authenticate(this));
+            setAuthentication(((Authentication.Deferred)_authentication).authenticate(getCoreRequest()));
 
         if (_authentication instanceof Authentication.User)
-            return ((Authentication.User)_authentication).isUserInRole(_scope, role);
+        {
+            if (_scope != null)
+                role = _scope.dereference(role);
+            return ((Authentication.User)_authentication).isUserInRole(role);
+        }
         return false;
     }
 
@@ -1842,7 +1850,7 @@ public class Request implements HttpServletRequest
         _timeStamp = ts;
     }
 
-    public void setUserIdentityScope(UserIdentity.Scope scope)
+    public void setUserIdentityScope(Scope scope)
     {
         _scope = scope;
     }
@@ -1914,7 +1922,11 @@ public class Request implements HttpServletRequest
         //do the authentication
         if (_authentication instanceof Authentication.Deferred)
         {
-            setAuthentication(((Authentication.Deferred)_authentication).authenticate(this, response));
+            try (Blocker.Callback callback = Blocker.callback())
+            {
+                setAuthentication(((Authentication.Deferred)_authentication).authenticate(getCoreRequest(), getHttpChannel().getCoreResponse(), callback));
+                callback.block();
+            }
         }
 
         //if the authentication did not succeed
@@ -2062,15 +2074,15 @@ public class Request implements HttpServletRequest
     {
         if (_authentication instanceof Authentication.LoginAuthentication)
         {
-            Authentication auth = ((Authentication.LoginAuthentication)_authentication).login(username, password, this);
+            Authentication auth = ((Authentication.LoginAuthentication)_authentication).login(username, password, getCoreRequest(), getHttpChannel().getCoreResponse());
             if (auth == null)
-                throw new Authentication.Failed("Authentication failed for username '" + username + "'");
+                throw new ServletException(new Authentication.Failed("Authentication failed for username '" + username + "'"));
             else
                 _authentication = auth;
         }
         else
         {
-            throw new Authentication.Failed("Authenticated failed for username '" + username + "'. Already authenticated as " + _authentication);
+            throw new ServletException(new Authentication.Failed("Authenticated failed for username '" + username + "'. Already authenticated as " + _authentication));
         }
     }
 
@@ -2078,7 +2090,7 @@ public class Request implements HttpServletRequest
     public void logout() throws ServletException
     {
         if (_authentication instanceof Authentication.LogoutAuthentication)
-            _authentication = ((Authentication.LogoutAuthentication)_authentication).logout(this);
+            _authentication = ((Authentication.LogoutAuthentication)_authentication).logout(getCoreRequest());
     }
 
     public void mergeQueryParameters(String oldQuery, String newQuery)
@@ -2182,5 +2194,44 @@ public class Request implements HttpServletRequest
         // INCLUDE dispatch, in which case this method returns the mapping of the source servlet,
         // which we recover from the IncludeAttributes wrapper.
         return findServletPathMapping();
+    }
+
+    /**
+     * A UserIdentity Scope.
+     * A scope is the environment in which a User Identity is to
+     * be interpreted. Typically it is set by the target servlet of
+     * a request.
+     */
+    public interface Scope
+    {
+        /**
+         * @return The context handler that the identity is being considered within
+         */
+        ContextHandler getContextHandler();
+
+        /**
+         * @return The context path that the identity is being considered within
+         */
+        String getContextPath();
+
+        /**
+         * @return The name of the identity context. Typically this is the servlet name.
+         */
+        String getName();
+
+        /**
+         * @return A map of role reference names that converts from names used by application code
+         * to names used by the context deployment.
+         */
+        Map<String, String> getRoleRefMap();
+
+        default String dereference(String role)
+        {
+            Map<String, String> roleMap = getRoleRefMap();
+            if (roleMap == null)
+                return role;
+            String deref = roleMap.get(role);
+            return deref == null ? role : deref;
+        }
     }
 }
