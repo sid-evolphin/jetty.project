@@ -27,9 +27,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.HttpMethodConstraintElement;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.annotation.ServletSecurity.EmptyRoleSemantic;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.ee.security.ConstraintAware;
 import org.eclipse.jetty.ee.security.ConstraintMapping;
 import org.eclipse.jetty.ee9.nested.ContextHandler;
@@ -44,6 +47,7 @@ import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.Blocker;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.component.DumpableCollection;
 import org.slf4j.Logger;
@@ -106,6 +110,35 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
         _securityHandler.setServer(server);
     }
 
+    @Override
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
+    {
+        ContextHandler.CoreContextRequest coreRequest = baseRequest.getCoreRequest();
+        Response coreResponse = baseRequest.getResponse().getHttpChannel().getCoreResponse();
+
+        try (Blocker.Callback callback = Blocker.callback())
+        {
+            // TODO change API so that we do not need a callback?
+            if (_securityHandler.handle(coreRequest, coreResponse, callback))
+            {
+                callback.block();
+                baseRequest.setHandled(true);
+                return;
+            }
+            callback.succeeded();
+        }
+        catch (IOException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new ServletException(e);
+        }
+
+        super.handle(target, baseRequest, request, response);
+    }
+
     public static Constraint createConstraint()
     {
         return Constraint.NONE;
@@ -159,14 +192,12 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
             if (permitOrDeny.equals(EmptyRoleSemantic.DENY))
             {
                 //Equivalent to <auth-constraint> with no roles
-                constraint.setName(name + "-Deny");
-                constraint.setAuthenticate(true);
+                constraint = constraint.named(name + "-Deny").with(Constraint.Authorization.AUTHENTICATED);
             }
             else
             {
                 //Equivalent to no <auth-constraint>
-                constraint.setName(name + "-Permit");
-                constraint.setAuthenticate(false);
+                constraint = constraint.named(name + "-Permit").with(Constraint.Authorization.NONE);
             }
         }
         else
@@ -178,7 +209,7 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
         }
 
         //Equivalent to //<user-data-constraint><transport-guarantee>CONFIDENTIAL</transport-guarantee></user-data-constraint>
-        constraint.setDataConstraint((transport.equals(TransportGuarantee.CONFIDENTIAL) ? Constraint.DC_CONFIDENTIAL : Constraint.DC_NONE));
+        constraint = constraint.with((transport.equals(TransportGuarantee.CONFIDENTIAL) ? Constraint.UserData.CONFIDENTIAL : Constraint.UserData.NONE));
         return constraint;
     }
 
