@@ -144,7 +144,7 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
         return Constraint.NONE;
     }
 
-    public static Constraint createConstraint(String name, Constraint.Authorization authorization, String[] roles, Constraint.UserData userData)
+    public static Constraint createConstraint(String name, Constraint.Authorization authorization, String[] roles, Constraint.Transport userData)
     {
         // TODO
         xxx;
@@ -209,7 +209,7 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
         }
 
         //Equivalent to //<user-data-constraint><transport-guarantee>CONFIDENTIAL</transport-guarantee></user-data-constraint>
-        constraint = constraint.with((transport.equals(TransportGuarantee.CONFIDENTIAL) ? Constraint.UserData.CONFIDENTIAL : Constraint.UserData.NONE));
+        constraint = constraint.with((transport.equals(TransportGuarantee.CONFIDENTIAL) ? Constraint.Transport.CONFIDENTIAL : Constraint.Transport.NONE));
         return constraint;
     }
 
@@ -570,7 +570,7 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
      * @param ri the role info
      * @param mapping the constraint mapping
      */
-    protected void configureConstraint(Constraint ri, ConstraintMapping mapping)
+    protected void configureConstraint(Constraint.Builder ri, ConstraintMapping mapping)
     {
         Constraint constraint = mapping.getConstraint();
         boolean forbidden = constraint.isForbidden();
@@ -578,7 +578,7 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
 
         //set up the data constraint (NOTE: must be done after setForbidden, as it nulls out the data constraint
         //which we need in order to do combining of omissions in prepareConstraintInfo
-        Constraint.UserData userDataConstraint = UserDataConstraint.get(mapping.getConstraint().getUserData());
+        Constraint.Transport userDataConstraint = Constraint.Transport.get(mapping.getConstraint().getUserData());
         ri.setUserDataConstraint(userDataConstraint);
 
         //if forbidden, no point setting up roles
