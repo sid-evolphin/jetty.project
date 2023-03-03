@@ -144,7 +144,7 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
         return Constraint.NONE;
     }
 
-    public static Constraint createConstraint(String name, Constraint.Authorization authorization, String[] roles, Constraint.Transport userData)
+    public static Constraint createConstraint(String name, Constraint.Authentication authorization, String[] roles, Constraint.Transport userData)
     {
         // TODO
         xxx;
@@ -192,12 +192,12 @@ public class ConstraintSecurityHandler extends HandlerWrapper implements Constra
             if (permitOrDeny.equals(EmptyRoleSemantic.DENY))
             {
                 //Equivalent to <auth-constraint> with no roles
-                constraint = constraint.named(name + "-Deny").with(Constraint.Authorization.AUTHENTICATED);
+                constraint = constraint.named(name + "-Deny").with(Constraint.Authentication.AUTHENTICATED);
             }
             else
             {
                 //Equivalent to no <auth-constraint>
-                constraint = constraint.named(name + "-Permit").with(Constraint.Authorization.NONE);
+                constraint = constraint.named(name + "-Permit").with(Constraint.Authentication.REQUIRE_NONE);
             }
         }
         else
