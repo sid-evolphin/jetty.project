@@ -124,13 +124,10 @@ public class ContextProvider extends ScanningAppProvider
                 return false;
 
             // ignore directories that have sibling war or XML file
-            if (Files.exists(dir.toPath().resolve(name + ".war")) ||
-                Files.exists(dir.toPath().resolve(name + ".WAR")) ||
-                Files.exists(dir.toPath().resolve(name + ".xml")) ||
-                Files.exists(dir.toPath().resolve(name + ".XML")))
-                return false;
-
-            return true;
+            return !Files.exists(dir.toPath().resolve(name + ".war")) &&
+                !Files.exists(dir.toPath().resolve(name + ".WAR")) &&
+                !Files.exists(dir.toPath().resolve(name + ".xml")) &&
+                !Files.exists(dir.toPath().resolve(name + ".XML"));
         }
     }
 
@@ -371,12 +368,8 @@ public class ContextProvider extends ScanningAppProvider
                 ContextHandler contextHandler = null;
                 if (context instanceof ContextHandler c)
                     contextHandler = c;
-                else if (context instanceof Supplier<?> supplier)
-                {
-                    Object nestedContext = supplier.get();
-                    if (nestedContext instanceof ContextHandler c)
-                        contextHandler = c;
-                }
+                else if (context instanceof Supplier<?> supplier && supplier.get() instanceof ContextHandler nested)
+                    contextHandler = nested;
                 if (contextHandler == null)
                     throw new IllegalStateException("Unknown context type of " + context);
 

@@ -163,7 +163,6 @@ public abstract class ScanningAppProvider extends ContainerLifeCycle implements 
                         Files.exists(path.getParent().resolve(basename + "/WEB-INF")));
             boolean coreProvider = _deploymentManager.hasAppProviderFor(Environment.CORE.getName());
 
-            // TODO review these heuristics... or even if we should have them at all
             if (isWebapp || (Files.isDirectory(path) && defaultEnvironmentName != null))
                 environmentName = defaultEnvironmentName;
             else if (coreProvider)

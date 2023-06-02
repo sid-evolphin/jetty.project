@@ -68,15 +68,8 @@ public class DeploymentManager extends ContainerLifeCycle
     /**
      * Represents a single tracked app within the deployment manager.
      */
-    public class AppEntry
+    public static class AppEntry
     {
-        /**
-         * Version of the app.
-         *
-         * Note: Auto-increments on each {@link DeploymentManager#addApp(App)}
-         */
-        private int version;
-
         /**
          * The app being tracked.
          */
@@ -90,7 +83,7 @@ public class DeploymentManager extends ContainerLifeCycle
         /**
          * Tracking the various AppState timestamps (in system milliseconds)
          */
-        private Map<Node, Long> stateTimestamps = new HashMap<Node, Long>();
+        private final Map<Node, Long> stateTimestamps = new HashMap<>();
 
         public App getApp()
         {
@@ -107,11 +100,6 @@ public class DeploymentManager extends ContainerLifeCycle
             return stateTimestamps;
         }
 
-        public int getVersion()
-        {
-            return version;
-        }
-
         void setLifeCycleNode(Node node)
         {
             this.lifecyleNode = node;
@@ -121,9 +109,9 @@ public class DeploymentManager extends ContainerLifeCycle
 
     private final AutoLock _lock = new AutoLock();
     private Throwable _onStartupErrors;
-    private final List<AppProvider> _providers = new ArrayList<AppProvider>();
+    private final List<AppProvider> _providers = new ArrayList<>();
     private final AppLifeCycle _lifecycle = new AppLifeCycle();
-    private final Queue<AppEntry> _apps = new ConcurrentLinkedQueue<AppEntry>();
+    private final Queue<AppEntry> _apps = new ConcurrentLinkedQueue<>();
     private ContextHandlerCollection _contexts;
     private boolean _useStandardBindings = true;
     private String _defaultLifeCycleGoal = AppLifeCycle.STARTED;
@@ -146,7 +134,7 @@ public class DeploymentManager extends ContainerLifeCycle
 
     /**
      * Receive an app for processing.
-     *
+     * <p>
      * Most commonly used by the various {@link AppProvider} implementations.
      *
      * @param app the app
@@ -260,13 +248,13 @@ public class DeploymentManager extends ContainerLifeCycle
             addLifeCycleBinding(new StandardUndeployer());
         }
 
-        // Start all of the AppProviders
+        // Start all AppProviders
         for (AppProvider provider : _providers)
         {
             startAppProvider(provider);
         }
 
-        try (AutoLock l = _lock.lock())
+        try (AutoLock ignored = _lock.lock())
         {
             ExceptionUtil.ifExceptionThrow(_onStartupErrors);
         }
@@ -378,7 +366,7 @@ public class DeploymentManager extends ContainerLifeCycle
 
     public List<App> getAppsWithSameContext(App app)
     {
-        List<App> ret = new ArrayList<App>();
+        List<App> ret = new ArrayList<>();
         if (app == null)
         {
             return ret;
@@ -538,10 +526,10 @@ public class DeploymentManager extends ContainerLifeCycle
             {
                 _lifecycle.runBindings(failed, appentry.app, this);
             }
-            catch (Throwable ignore)
+            catch (Throwable x)
             {
                 // The runBindings failed for 'failed' node
-                LOG.trace("IGNORED", ignore);
+                LOG.trace("IGNORED", x);
             }
 
             if (isStarting())
@@ -553,7 +541,7 @@ public class DeploymentManager extends ContainerLifeCycle
 
     private void addOnStartupError(Throwable cause)
     {
-        try (AutoLock l = _lock.lock())
+        try (AutoLock ignored = _lock.lock())
         {
             _onStartupErrors = ExceptionUtil.combine(_onStartupErrors, cause);
         }
