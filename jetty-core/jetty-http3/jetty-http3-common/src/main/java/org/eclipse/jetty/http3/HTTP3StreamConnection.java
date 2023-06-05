@@ -125,8 +125,17 @@ public abstract class HTTP3StreamConnection extends AbstractConnection
                 case FRAME ->
                 {
                     action.getAndSet(null).run();
-                    // Do not release the buffer here to avoid races with
-                    // user-spawned threads that may call Stream.read().
+                    // Do not release the buffer before the stream started closing
+                    // to avoid races with user-spawned threads that may call Stream.read().
+                    if (networkBuffer != null && stream.isClosing())
+                    {
+                        if (networkBuffer.hasRemaining())
+                            throw new IllegalStateException();
+                        networkBuffer.release();
+                        if (LOG.isDebugEnabled())
+                            LOG.debug("released {}", networkBuffer);
+                        networkBuffer = null;
+                    }
                 }
             }
         }

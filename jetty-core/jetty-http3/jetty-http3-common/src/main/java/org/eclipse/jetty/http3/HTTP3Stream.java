@@ -407,6 +407,11 @@ public abstract class HTTP3Stream implements Stream, CyclicTimeouts.Expirable, A
         return closeState == CloseState.CLOSED;
     }
 
+    public boolean isClosing()
+    {
+        return closeState != CloseState.NOT_CLOSED;
+    }
+
     public void updateClose(boolean update, boolean local)
     {
         if (update)
