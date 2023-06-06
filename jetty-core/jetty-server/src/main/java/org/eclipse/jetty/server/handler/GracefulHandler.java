@@ -40,7 +40,7 @@ public class GracefulHandler extends Handler.Wrapper implements Graceful
         shutdown = new Shutdown(this)
         {
             @Override
-            public boolean isShutdownDone()
+            protected boolean isShutdownDone()
             {
                 long count = dispatchedStats.sum();
                 if (LOG.isDebugEnabled())
