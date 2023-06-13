@@ -57,18 +57,26 @@ Project documentation is available on the Jetty Eclipse website.
 Building
 ========
 
-[Apache Maven 3.8.0](https://maven.apache.org/) and [OpenJDK](https://adoptium.net/) requirements:
+[Apache Maven 3.9.2](https://maven.apache.org/) and [OpenJDK](https://adoptium.net/) requirements:
 
 Branch         | Maven Version | Minimum JDK | Recommended JDK
 ---------------|---------------|-------------| ---------------
 `jetty-10.0.x` | Maven 3.8.6+  | OpenJDK 11  | OpenJDK 17 (for optional loom and http/3 support)
 `jetty-11.0.x` | Maven 3.8.6+  | OpenJDK 11  | OpenJDK 17 (for optional loom and http/3 support)
-`jetty-12.0.x` | Maven 3.8.6+  | OpenJDK 17  | OpenJDK 17
+`jetty-12.0.x` | Maven 3.9.2+  | OpenJDK 17  | OpenJDK 19 (for optional quic using foreign memory)
 
 Full Build with All Tests:
 
 ``` shell
 mvn clean install
+```
+
+Maven Build Cache
+
+Per default, the build is using the [Maven Build Cache extension](https://maven.apache.org/extensions/maven-build-cache-extension/)
+this means you will use your local build cache, To disable it you can use the property
+```shell
+mvn clean install -Dmaven.build.cache.enabled=false
 ```
 
 Fast Build if you need jars and distribution (not running tests, checkstyle, enforcer, license check):
